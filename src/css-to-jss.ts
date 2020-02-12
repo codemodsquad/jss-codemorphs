@@ -7,6 +7,7 @@ import {
   Identifier,
   StringLiteral,
   NumericLiteral,
+  ArrayExpression,
 } from 'jscodeshift'
 import j from 'jscodeshift'
 import * as recast from 'recast'
@@ -45,6 +46,7 @@ module.exports = function example(
   convertSelectors(converted)
   const animationNames = collectAnimationNames(root.nodes || [])
   convertAnimationNames(converted, animationNames)
+  convertFallbacks(converted)
 
   const rawConverted = converted.properties
     .map(p => recast.prettyPrint(p).code)
@@ -75,11 +77,57 @@ const getRawKey = (
     ? key.value
     : null
 
+const processDeep = (iteratee: (node: ObjectExpression) => any) => (
+  node: ObjectExpression
+) => {
+  const handle = (node: ObjectExpression): void => {
+    iteratee(node)
+    for (const prop of node.properties) {
+      if (prop.type !== 'ObjectProperty') continue
+      if (prop.value.type === 'ObjectExpression') handle(prop.value)
+    }
+  }
+  handle(node)
+}
+
+export function convertSelectors(root: ObjectExpression): void {
+  const replacements: Map<string, string> = new Map()
+  for (const prop of root.properties) {
+    if (prop.type !== 'ObjectProperty') continue
+    const { value } = prop
+    const key = getRawKey(prop.key)
+    if (!key || value.type !== 'ObjectExpression') continue
+    const match = /^\.(-?[_a-zA-Z]+[_a-zA-Z0-9-]*)$/.exec(key)
+    if (match) {
+      const replacement = camelCase(match[1])
+      replacements.set(match[0], `$${replacement}`)
+      prop.key = objectPropertyKey(replacement)
+    }
+  }
+
+  processDeep((node: ObjectExpression): void => {
+    for (const prop of node.properties) {
+      if (prop.type !== 'ObjectProperty') continue
+      const { value } = prop
+      const key = getRawKey(prop.key)
+      if (value.type === 'ObjectExpression' && key && !key.startsWith('@')) {
+        const replaced = key.replace(
+          /\.\S+/g,
+          match => replacements.get(match) || match
+        )
+        if (replaced !== key) {
+          prop.key = objectPropertyKey(replaced)
+        }
+      }
+    }
+  })(root)
+}
+
 export function convertAnimationNames(
   root: ObjectExpression,
   animationNames: Set<string>
 ): void {
-  const replaceDeep = (node: ObjectExpression): void => {
+  processDeep((node: ObjectExpression): void => {
     for (const prop of node.properties) {
       if (prop.type !== 'ObjectProperty') continue
       const { value } = prop
@@ -101,48 +149,31 @@ export function convertAnimationNames(
           }
         }
       }
-
-      if (value.type === 'ObjectExpression') replaceDeep(value)
     }
-  }
-  replaceDeep(root)
+  })(root)
 }
 
-export function convertSelectors(root: ObjectExpression): void {
-  const replacements: Map<string, string> = new Map()
-  for (const prop of root.properties) {
+const convertFallbacks = processDeep((node: ObjectExpression): void => {
+  const { properties } = node
+  const fallbacks: ObjectExpression[] = []
+  const encountered: Set<string> = new Set()
+  for (let i = properties.length - 1; i >= 0; i--) {
+    const prop = properties[i]
     if (prop.type !== 'ObjectProperty') continue
-    const { value } = prop
     const key = getRawKey(prop.key)
-    if (!key || value.type !== 'ObjectExpression') continue
-    const match = /^\.(-?[_a-zA-Z]+[_a-zA-Z0-9-]*)$/.exec(key)
-    if (match) {
-      const replacement = camelCase(match[1])
-      replacements.set(match[0], `$${replacement}`)
-      prop.key = objectPropertyKey(replacement)
+    if (!key) continue
+    if (encountered.has(key)) {
+      fallbacks.unshift(j.objectExpression([prop]))
+      properties.splice(i, 1)
+    } else {
+      encountered.add(key)
     }
   }
-
-  const replaceDeep = (node: ObjectExpression): void => {
-    for (const prop of node.properties) {
-      if (prop.type !== 'ObjectProperty') continue
-      const { value } = prop
-      const key = getRawKey(prop.key)
-      if (value.type !== 'ObjectExpression') continue
-      if (key && !key.startsWith('@')) {
-        const replaced = key.replace(
-          /\.\S+/g,
-          match => replacements.get(match) || match
-        )
-        if (replaced !== key) {
-          prop.key = objectPropertyKey(replaced)
-        }
-      }
-      replaceDeep(value)
-    }
-  }
-  replaceDeep(root)
-}
+  if (fallbacks.length)
+    properties.push(
+      j.objectProperty(j.identifier('fallbacks'), j.arrayExpression(fallbacks))
+    )
+})
 
 export function convertNodes(nodes: postcss.Node[]): ObjectExpression {
   const properties: ObjectProperty[] = []
@@ -189,11 +220,22 @@ const objectPropertyKey = (s: string): Identifier | StringLiteral =>
 
 function convertDecl(decl: postcss.Declaration): ObjectProperty {
   const key = convertProp(decl.prop)
-  const defaultUnit = defaultUnits[decl.prop]
-  let value: StringLiteral | NumericLiteral = j.stringLiteral(decl.value)
-  if (defaultUnit) {
-    const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(decl.value)
-    if (match) value = j.numericLiteral(parseFloat(match[1]))
+  let value: StringLiteral | NumericLiteral | ArrayExpression
+  if (decl.prop === 'content') {
+    value = j.stringLiteral(decl.value.replace(/^'|'$/g, '"'))
+  } else {
+    const defaultUnit = defaultUnits[decl.prop]
+    value = j.stringLiteral(decl.value)
+    if (defaultUnit) {
+      const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(decl.value)
+      if (match) value = j.numericLiteral(parseFloat(match[1]))
+    }
+  }
+  if (decl.important) {
+    value = j.arrayExpression([
+      j.arrayExpression([value]),
+      j.stringLiteral('!important'),
+    ])
   }
   return j.objectProperty(key, value)
 }
