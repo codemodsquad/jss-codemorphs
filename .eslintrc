@@ -5,5 +5,8 @@
   ],
   "env": {
     "node": true
+  },
+  "rules": {
+    "@typescript-eslint/no-use-before-define": 0
   }
 }

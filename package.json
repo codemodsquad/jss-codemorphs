@@ -1,7 +1,7 @@
 {
-  "name": "jscodeshift-transforms-skeleton",
+  "name": "jss-codemorphs",
   "version": "0.0.0-development",
-  "description": "skeleton for a jscodeshift transforms package",
+  "description": "jscodeshift transforms for converting CSS to JSS",
   "sideEffects": false,
   "scripts": {
     "lint": "eslint $npm_package_config_lint",
@@ -68,18 +68,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/codemodsquad/jscodeshift-transforms-skeleton.git"
+    "url": "https://github.com/codemodsquad/jss-codemorphs.git"
   },
   "keywords": [
+    "css",
+    "jss",
     "jscodeshift",
     "codemods"
   ],
   "author": "Andy Edwards",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/codemodsquad/jscodeshift-transforms-skeleton/issues"
+    "url": "https://github.com/codemodsquad/jss-codemorphs/issues"
   },
-  "homepage": "https://github.com/codemodsquad/jscodeshift-transforms-skeleton#readme",
+  "homepage": "https://github.com/codemodsquad/jss-codemorphs#readme",
   "devDependencies": {
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.1.6",
@@ -100,6 +102,7 @@
     "@jedwards1211/eslint-config-typescript": "^1.0.0",
     "@types/chai": "^4.2.0",
     "@types/jscodeshift": "^0.6.3",
+    "@types/lodash": "^4.14.149",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.6",
     "@types/prettier": "^1.19.0",
@@ -128,7 +131,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.1.5",
-    "jscodeshift-paths-in-range": "^1.0.0"
+    "jscodeshift-paths-in-range": "^1.0.0",
+    "lodash": "^4.17.15",
+    "postcss": "^7.0.26",
+    "recast": "^0.18.5"
   },
   "renovate": {
     "extends": [
