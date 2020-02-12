@@ -79,7 +79,7 @@ const getRawKey = (
 
 const processDeep = (iteratee: (node: ObjectExpression) => any) => (
   node: ObjectExpression
-) => {
+): void => {
   const handle = (node: ObjectExpression): void => {
     iteratee(node)
     for (const prop of node.properties) {
