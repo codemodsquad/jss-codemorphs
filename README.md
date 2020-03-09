@@ -8,6 +8,8 @@
 
 jscodeshift transform for converting from CSS to JSS
 
+[Try it out!](https://codemodsquad.github.io/jss-codemorphs/)
+
 ## Example
 
 ### Before
