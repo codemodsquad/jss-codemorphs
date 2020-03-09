@@ -9,5 +9,6 @@
 /scripts
 /coverage
 /flow-typed
+/demo
 __tests__
 /.*
