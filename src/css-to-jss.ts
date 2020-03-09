@@ -21,7 +21,7 @@ import {
   ExpressionKind,
 } from 'ast-types/gen/kinds'
 
-module.exports = function example(
+module.exports = function cssToJss(
   fileInfo: FileInfo,
   api: API,
   options: Options
@@ -198,7 +198,7 @@ export function convertNodes(nodes: postcss.Node[]): ObjectExpression {
 function convertAtRule(atrule: postcss.AtRule): ObjectProperty {
   const { name, params, nodes } = atrule
   return j.objectProperty(
-    j.stringLiteral(`@${name} ${params}`),
+    j.stringLiteral(params ? `@${name} ${params}` : `@${name}`),
     convertNodes(nodes || [])
   )
 }
@@ -218,16 +218,26 @@ function convertSelector(selector: string): Identifier | StringLiteral {
 const objectPropertyKey = (s: string): Identifier | StringLiteral =>
   /^[_a-z][_a-z0-9]*$/i.test(s) ? j.identifier(s) : j.stringLiteral(s)
 
+function convertDeclValue(value: string): string {
+  value = value
+    .replace(/^'|'$/g, '')
+    .replace(/^|$/g, '"')
+    .replace(/\\\\\\n/g, '\\n')
+    .replace(/url\('([^)]+)'\)/g, 'url($1)')
+  return JSON.parse(value)
+}
+
 function convertDecl(decl: postcss.Declaration): ObjectProperty {
   const key = convertProp(decl.prop)
+  const declValue = convertDeclValue(decl.value)
   let value: StringLiteral | NumericLiteral | ArrayExpression
   if (decl.prop === 'content') {
-    value = j.stringLiteral(decl.value.replace(/^'|'$/g, '"'))
+    value = j.stringLiteral(JSON.stringify(declValue))
   } else {
     const defaultUnit = defaultUnits[decl.prop]
-    value = j.stringLiteral(decl.value)
+    value = j.stringLiteral(declValue)
     if (defaultUnit) {
-      const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(decl.value)
+      const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(declValue)
       if (match) value = j.numericLiteral(parseFloat(match[1]))
     }
   }
