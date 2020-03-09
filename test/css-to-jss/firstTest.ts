@@ -22,16 +22,20 @@ ul li {
 export const expected = `
 const styles = {
   '@media screen and (min-width: 480px)': {
-    body: {
-      backgroundColor: 'lightgreen',
-      color: 'white',
-    }
+    '@global': {
+      body: {
+        backgroundColor: 'lightgreen',
+        color: 'white',
+      }
+    },
   },
-  '#main': {
-    border: '1px solid black',
-  },
-  'ul li': {
-    padding: 5,
-  },
+  '@global': {
+    '#main': {
+      border: '1px solid black',
+    },
+    'ul li': {
+      padding: 5,
+    },
+  }
 }
 `

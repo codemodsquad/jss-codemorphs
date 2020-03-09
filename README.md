@@ -6,60 +6,116 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![npm version](https://badge.fury.io/js/jss-codemorphs.svg)](https://badge.fury.io/js/jss-codemorphs)
 
-[Work in Progress] jscodeshift transforms for converting from CSS to JSS
+jscodeshift transform for converting from CSS to JSS
 
 ## Example
 
 ### Before
 
-```js
-const styles = {
-/* selectionStart */
-.foo {
-  color: green;
-  & .bar-qux {
+```ts
+@keyframes alarm {
+  from {
     color: red;
   }
-  & .baz {
-    color: blue;
+  50% {
+    color: initial;
   }
+  to {
+    color: red;
+  }
+}
+.foo {
+  color: green;
+  & .bar-qux, & .glorm:after {
+    color: red;
+  }
+  & .baz:after {
+    content: 'whoo';
+  }
+}
+.glorm {
+  color: green;
+  display: box;
+  display: flex-box;
+  display: flex;
 }
 .bar-qux {
   color: white;
+  animation: alarm 1s linear infinite;
 }
 @media screen {
+  a {
+    text-decoration: none;
+    .foo {
+      color: brown;
+    }
+  }
   .foo {
     & .bar-qux {
       color: orange;
     }
   }
 }
-/* selectionEnd */
-}
+```
+
+### Command
+
+```
+jscodeshift -t path/to/jss-codemorphs/css-to-jss.js <file>
 ```
 
 ### After
 
-```js
-const styles = {
-  foo: {
-    color: 'green',
+```ts
+'@keyframes alarm': {
+  from: {
+    color: 'red',
+  },
+  '50%': {
+    color: 'initial',
+  },
+  to: {
+    color: 'red',
+  },
+},
+foo: {
+  color: 'green',
+  '& $barQux, & $glorm:after': {
+    color: 'red',
+  },
+  '& .baz:after': {
+    content: '"whoo"',
+  },
+},
+glorm: {
+  color: 'green',
+  display: 'flex',
+  fallbacks: [
+    {
+      display: 'box',
+    },
+    {
+      display: 'flex-box',
+    },
+  ],
+},
+barQux: {
+  color: 'white',
+  animation: '$alarm 1s linear infinite',
+},
+'@media screen': {
+  $foo: {
     '& $barQux': {
-      color: 'red',
-    },
-    '& .baz': {
-      color: 'blue',
+      color: 'orange',
     },
   },
-  barQux: {
-    color: 'white',
-  },
-  '@media screen': {
-    $foo: {
-      '& $barQux': {
-        color: 'orange',
+  '@global': {
+    a: {
+      textDecoration: 'none',
+      '& $foo': {
+        color: 'brown',
       },
     },
   },
-}
+},
 ```

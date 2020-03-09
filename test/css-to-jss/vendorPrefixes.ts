@@ -1,7 +1,7 @@
 export const input = `
 const styles = {
 /* selectionStart */
-body {
+.test {
   -webkit-transform: translateX(0);
   -moz-transform: translateX(0);
   -ms-transform: translateX(0);
@@ -13,7 +13,7 @@ body {
 
 export const expected = `
 const styles = {
-  body: {
+  test: {
     WebkitTransform: 'translateX(0)',
     MozTransform: 'translateX(0)',
     msTransform: 'translateX(0)',

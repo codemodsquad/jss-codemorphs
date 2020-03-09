@@ -1,7 +1,7 @@
 export const input = `
 const styles = {
 /* selectionStart */
-body {
+.test {
   background: red !important;
 }
 /* selectionEnd */
@@ -10,7 +10,7 @@ body {
 
 export const expected = `
 const styles = {
-  body: {
+  test: {
     background: [['red'], '!important'],
   }
 }

@@ -3,12 +3,15 @@ const styles = {
 /* selectionStart */
 .foo {
   color: green;
-  & .bar-qux {
+  & .bar-qux, & .glorm:after {
     color: red;
   }
   & .baz {
     color: blue;
   }
+}
+.glorm {
+  color: green;
 }
 .bar-qux {
   color: white;
@@ -28,12 +31,15 @@ export const expected = `
 const styles = {
   foo: {
     color: 'green',
-    '& $barQux': {
+    '& $barQux, & $glorm:after': {
       color: 'red',
     },
     '& .baz': {
       color: 'blue',
     }
+  },
+  glorm: {
+    color: 'green',
   },
   barQux: {
     color: 'white',
