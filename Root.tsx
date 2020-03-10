@@ -7,7 +7,7 @@ import { makeStyles, Theme } from '@material-ui/core/styles'
 import debounce from 'lodash/debounce'
 import noop from 'lodash/noop'
 import j from 'jscodeshift'
-import cssToJss from '../src/cssToJss'
+import { convertCssToJssString } from '../src/convertCssToJss'
 import classNames from 'classnames'
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -111,21 +111,7 @@ export default function Root(): React.ReactNode {
       debounce((input: string): void => {
         let converted: string | Error
         try {
-          converted =
-            cssToJss(
-              {
-                path: '',
-                source: input,
-              },
-              {
-                j,
-                jscodeshift: j,
-                report: noop,
-                stats: noop,
-              },
-              {}
-            ) || ''
-          converted = converted.replace(/^ {2,}/gm, match =>
+          converted = convertCssToJssString(input).replace(/^ {2,}/gm, match =>
             match.substring(match.length / 2)
           )
         } catch (error) {
