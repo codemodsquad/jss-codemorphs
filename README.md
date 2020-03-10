@@ -10,7 +10,24 @@ jscodeshift transform for converting from CSS to JSS
 
 [Try it out!](https://codemodsquad.github.io/jss-codemorphs/)
 
-## Example
+# Table of Contents
+
+<!-- toc -->
+
+- [JSCodeshift Transforms](#jscodeshift-transforms)
+  - [`css-to-jss`](#css-to-jss)
+- [Node.js API](#nodejs-api)
+  - [`convertCssToJss`](#convertcsstojss)
+  - [`convertCssToJssString`](#convertcsstojssstring)
+
+<!-- tocstop -->
+
+# JSCodeshift Transforms
+
+## `css-to-jss`
+
+Converts CSS to JSS. Accepts `selectionStart` and `selectionEnd` options if you only want to convert
+a subrange of a file.
 
 ### Before
 
@@ -120,4 +137,35 @@ barQux: {
     },
   },
 },
+```
+
+# Node.js API
+
+## `convertCssToJss`
+
+```js
+import convertCssToJss from 'jss-codemorphs/convertCssToJss'
+```
+
+Converts CSS to JSS. Returns an array of JS `ObjectProperty` AST nodes
+representing the JSS. If you just want the string text, use `convertCssToJssString`.
+
+Signature:
+
+```js
+declare function convertCssToJss(rawCss: string): ObjectProperty[]
+```
+
+## `convertCssToJssString`
+
+```js
+import { convertCssToJssString } from 'jss-codemorphs/convertCssToJss'
+```
+
+Converts CSS to JSS. Returns the resulting JSS code as a string.
+
+Signature:
+
+```js
+declare function convertCssToJssString(rawCss: string): string
 ```
