@@ -34,10 +34,21 @@ export default function convertCssToJss(rawCss: string): ObjectProperty[] {
   ) as ObjectProperty[]
 }
 
-export function convertCssToJssString(rawCss: string): string {
-  return convertCssToJss(rawCss)
-    .map(p => recast.prettyPrint(p).code)
-    .join(',\n')
+export function convertCssToJssString(
+  rawCss: string,
+  options?: recast.Options
+): string {
+  const recastOptions: recast.Options = {
+    quote: 'single',
+    tabWidth: 2,
+    useTabs: false,
+    ...options,
+  }
+  return (
+    convertCssToJss(rawCss)
+      .map(p => recast.prettyPrint(p, recastOptions).code)
+      .join(',\n') + ','
+  )
 }
 
 export function collectAnimationNames(nodes: postcss.Node[]): Set<string> {

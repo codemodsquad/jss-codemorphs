@@ -111,9 +111,7 @@ export default function Root(): React.ReactNode {
       debounce((input: string): void => {
         let converted: string | Error
         try {
-          converted = convertCssToJssString(input).replace(/^ {2,}/gm, match =>
-            match.substring(match.length / 2)
-          )
+          converted = convertCssToJssString(input)
         } catch (error) {
           converted = error
         }

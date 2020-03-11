@@ -162,10 +162,15 @@ declare function convertCssToJss(rawCss: string): ObjectProperty[]
 import { convertCssToJssString } from 'jss-codemorphs/convertCssToJss'
 ```
 
-Converts CSS to JSS. Returns the resulting JSS code as a string.
+Converts CSS to JSS. Returns the resulting JSS code as a string. You can
+pass `recast.Options` as the second argument to customize the code format.
+Uses `{ tabWidth: 2, useTabs: false, quote: 'single' }` as default options.
 
 Signature:
 
 ```js
-declare function convertCssToJssString(rawCss: string): string
+declare function convertCssToJssString(
+  rawCss: string,
+  options?: recast.Options
+): string
 ```
