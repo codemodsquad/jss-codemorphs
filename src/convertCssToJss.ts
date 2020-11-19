@@ -117,7 +117,7 @@ export function splitGlobals(selector: string): [string | null, string | null] {
 export function convertSelectors(root: ObjectExpression): void {
   const replacements: Map<string, string> = new Map()
 
-  const processClasses = root => {
+  const processClassesSelector = selectorParser(root => {
     root.walkClasses(classNode => {
       if (!classNode.value) return
       const replacement = replacements.get(classNode.value)
@@ -125,7 +125,7 @@ export function convertSelectors(root: ObjectExpression): void {
         classNode.replaceWith(selectorParser.tag({ value: replacement }))
       }
     })
-  }
+  })
 
   const processRootSelector = selectorParser(root => {
     if (root.length !== 1) return
@@ -139,8 +139,6 @@ export function convertSelectors(root: ObjectExpression): void {
       const replacement = camelCase(className)
       replacements.set(className, `$${replacement}`)
       first.first.replaceWith(selectorParser.tag({ value: replacement }))
-    } else {
-      processClasses(root)
     }
   })
 
@@ -151,18 +149,12 @@ export function convertSelectors(root: ObjectExpression): void {
         node.insertBefore(node.at(0), selectorParser.nesting({}))
       }
     })
-    processClasses(root)
-  })
-
-  const processSelectorInMediaOrGlobal = selectorParser(root => {
-    processClasses(root)
   })
 
   const processNode = (
     parentKey: string | null,
     node: ObjectExpression
   ): void => {
-    debugger
     const globals: ObjectProperty[] = []
     if (!parentKey || !/^@(keyframes|global)/.test(parentKey)) {
       node.properties = node.properties.filter(
@@ -179,11 +171,12 @@ export function convertSelectors(root: ObjectExpression): void {
               if (newKey !== key) prop.key = objectPropertyKey(newKey)
             }
           } else {
-            if (localSelector) {
-              const replaced =
-                parentKey.startsWith('@media') || parentKey === '@global'
-                  ? processSelectorInMediaOrGlobal.processSync(localSelector)
-                  : processSelector.processSync(localSelector)
+            if (
+              localSelector &&
+              !parentKey.startsWith('@media') &&
+              parentKey !== '@global'
+            ) {
+              const replaced = processSelector.processSync(localSelector)
               if (replaced !== key) {
                 prop.key = objectPropertyKey(replaced)
               }
@@ -191,12 +184,7 @@ export function convertSelectors(root: ObjectExpression): void {
           }
           if (globalSelector) {
             globals.push(
-              j.objectProperty(
-                objectPropertyKey(
-                  processSelectorInMediaOrGlobal.processSync(globalSelector)
-                ),
-                value
-              )
+              j.objectProperty(objectPropertyKey(globalSelector), value)
             )
           }
           return localSelector != null
@@ -219,8 +207,23 @@ export function convertSelectors(root: ObjectExpression): void {
       processNode(key, value)
     }
   }
+  const processClasses = (node: ObjectExpression): void => {
+    for (const prop of node.properties) {
+      if (prop.type !== 'ObjectProperty') continue
+      const { value } = prop
+      const key = getRawKey(prop.key)
+      if (!key || value.type !== 'ObjectExpression') continue
+      const [localSelector] = splitGlobals(key)
+      if (localSelector) {
+        const newKey = processClassesSelector.processSync(localSelector)
+        if (newKey !== key) prop.key = objectPropertyKey(newKey)
+      }
 
+      processClasses(value)
+    }
+  }
   processNode(null, root)
+  processClasses(root)
 }
 
 export function convertAnimationNames(
