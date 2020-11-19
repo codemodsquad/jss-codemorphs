@@ -117,17 +117,31 @@ export function splitGlobals(selector: string): [string | null, string | null] {
 export function convertSelectors(root: ObjectExpression): void {
   const replacements: Map<string, string> = new Map()
 
+  const processClasses = root => {
+    root.walkClasses(classNode => {
+      if (!classNode.value) return
+      const replacement = replacements.get(classNode.value)
+      if (replacement) {
+        classNode.replaceWith(selectorParser.tag({ value: replacement }))
+      }
+    })
+  }
+
   const processRootSelector = selectorParser(root => {
     if (root.length !== 1) return
     const { first } = root
-    if (first?.type !== 'selector' || first.length !== 1) {
-      return
+    if (
+      first?.type === 'selector' &&
+      first.length === 1 &&
+      first.first?.type === 'class'
+    ) {
+      const className = first.first.value
+      const replacement = camelCase(className)
+      replacements.set(className, `$${replacement}`)
+      first.first.replaceWith(selectorParser.tag({ value: replacement }))
+    } else {
+      processClasses(root)
     }
-    if (first.first?.type !== 'class') return
-    const className = first.first.value
-    const replacement = camelCase(className)
-    replacements.set(className, `$${replacement}`)
-    first.first.replaceWith(selectorParser.tag({ value: replacement }))
   })
 
   const processSelector = selectorParser(root => {
@@ -137,29 +151,18 @@ export function convertSelectors(root: ObjectExpression): void {
         node.insertBefore(node.at(0), selectorParser.nesting({}))
       }
     })
-    root.walkClasses(classNode => {
-      if (!classNode.value) return
-      const replacement = replacements.get(classNode.value)
-      if (replacement) {
-        classNode.replaceWith(selectorParser.tag({ value: replacement }))
-      }
-    })
+    processClasses(root)
   })
 
   const processSelectorInMediaOrGlobal = selectorParser(root => {
-    root.walkClasses(classNode => {
-      if (!classNode.value) return
-      const replacement = replacements.get(classNode.value)
-      if (replacement) {
-        classNode.replaceWith(selectorParser.tag({ value: replacement }))
-      }
-    })
+    processClasses(root)
   })
 
   const processNode = (
     parentKey: string | null,
     node: ObjectExpression
   ): void => {
+    debugger
     const globals: ObjectProperty[] = []
     if (!parentKey || !/^@(keyframes|global)/.test(parentKey)) {
       node.properties = node.properties.filter(
