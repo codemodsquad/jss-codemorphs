@@ -32,7 +32,7 @@ const styles = {
     fontSize: 12,
     background: 'white contain no-repeat',
     transition: 'background color font-size',
-    lineHeight: '1',
+    lineHeight: 1,
     transitionDuration: 300
   },
 }

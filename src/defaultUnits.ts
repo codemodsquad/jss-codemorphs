@@ -1,12 +1,14 @@
 const px = 'px'
 const ms = 'ms'
 const percent = '%'
+const unitless = ''
 
 // copped from jss-plugin-default-unit
 export default {
   // Animation properties
   'animation-delay': ms,
   'animation-duration': ms,
+  'animation-iteration-count': unitless,
 
   // Background properties
   'background-position': px,
@@ -20,6 +22,9 @@ export default {
   'border-bottom-left-radius': px,
   'border-bottom-right-radius': px,
   'border-bottom-width': px,
+  'border-image-outset': unitless,
+  'border-image-slice': unitless,
+  'border-image-width': unitless,
   'border-left': px,
   'border-left-width': px,
   'border-radius': px,
@@ -49,6 +54,10 @@ export default {
   'mask-position-x': px,
   'mask-position-y': px,
   'mask-size': px,
+  'mask-border-outset': unitless,
+  'mask-border-width': unitless,
+  'mask-box-outset': unitless,
+  'mask-box-width': unitless,
 
   // Width and height properties
   height: px,
@@ -64,6 +73,14 @@ export default {
   top: px,
   right: px,
 
+  // Flexbox properties
+  flex: unitless,
+  'flex-grow': unitless,
+  'flex-positive': unitless,
+  'flex-shrink': unitless,
+  'flex-negative': unitless,
+  order: unitless,
+
   // Shadow properties
   'box-shadow': px,
   'text-shadow': px,
@@ -73,11 +90,15 @@ export default {
   'column-rule': px,
   'column-rule-width': px,
   'column-width': px,
+  'column-count': unitless,
 
   // Font and text properties
   'font-size': px,
   'font-size-delta': px,
+  'font-size-adjust': unitless,
+  'font-weight': unitless,
   'letter-spacing': px,
+  'line-height': unitless,
   'text-indent': px,
   'text-stroke': px,
   'text-stroke-width': px,
@@ -112,8 +133,24 @@ export default {
   'flex-basis': px,
 
   // Some random properties
+  'counter-increment': unitless,
+  'counter-reset': unitless,
+  opacity: unitless,
+  orphans: unitless,
+  'nav-index': unitless,
   'shape-margin': px,
   size: px,
+  'tab-size': unitless,
+  widows: unitless,
+  'z-index': unitless,
+  zoom: unitless,
+
+  // CSS2 Screen reader
+  'pitch-range': unitless,
+  richness: unitless,
+  'speech-rate': unitless,
+  stress: unitless,
+  volume: unitless,
 
   // Grid properties
   grid: px,
@@ -124,6 +161,19 @@ export default {
   'grid-template-columns': px,
   'grid-auto-rows': px,
   'grid-auto-columns': px,
+  'grid-row': unitless,
+  'grid-column': unitless,
+
+  // SVG properties
+  'fill-opacity': unitless,
+  'flood-opacity': unitless,
+  'stop-opacity': unitless,
+  'stroke-dasharray': unitless,
+  'stroke-dashoffset': unitless,
+  'stroke-miterlimit': unitless,
+  'stroke-opacity': unitless,
+  'stroke-width': unitless,
+  'shape-image-threshold': unitless,
 
   // Not existing properties.
   // Used to avoid issues with jss-plugin-expand integration.

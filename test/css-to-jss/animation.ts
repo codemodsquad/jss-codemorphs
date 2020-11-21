@@ -15,6 +15,7 @@ const styles = {
 .test {
   animation: foo 1s ease;
   animation-name: foo;
+  animation-iteration-count: 1;
 }
 /* selectionEnd */
 }
@@ -36,6 +37,7 @@ const styles = {
   test: {
     animation: '$foo 1s ease',
     animationName: '$foo',
+    animationIterationCount: 1,
   },
 }
 `

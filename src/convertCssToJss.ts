@@ -339,7 +339,7 @@ function convertDecl(decl: postcss.Declaration): ObjectProperty {
   } else {
     const defaultUnit = defaultUnits[decl.prop]
     value = j.stringLiteral(declValue)
-    if (defaultUnit) {
+    if (defaultUnit != null) {
       const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(declValue)
       if (match) value = j.numericLiteral(parseFloat(match[1]))
     }
