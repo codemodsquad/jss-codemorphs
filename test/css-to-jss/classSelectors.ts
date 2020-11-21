@@ -29,6 +29,7 @@ const styles = {
 
 export const expected = `
 const styles = {
+  baz: {},
   foo: {
     color: 'green',
     '& $barQux, & $glorm:after': {
@@ -38,7 +39,6 @@ const styles = {
       color: 'blue',
     }
   },
-  baz: {},
   glorm: {
     color: 'green',
   },

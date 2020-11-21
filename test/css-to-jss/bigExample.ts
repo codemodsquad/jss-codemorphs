@@ -61,6 +61,7 @@ const styles = {
       color: 'red',
     },
   },
+  baz: {},
   foo: {
     color: 'green',
     '& $barQux, & $glorm:after': {
@@ -101,6 +102,5 @@ const styles = {
       },
     },
   },
-  baz: {},
 }
 `

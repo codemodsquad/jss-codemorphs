@@ -5,6 +5,10 @@ import {
   StringLiteral,
   NumericLiteral,
   ArrayExpression,
+  Property,
+  ObjectMethod,
+  SpreadProperty,
+  SpreadElement,
 } from 'jscodeshift'
 import j from 'jscodeshift'
 import * as postcss from 'postcss'
@@ -228,20 +232,31 @@ export function convertSelectors(root: ObjectExpression): void {
     }
   }
   const addMissingClassProperties = (node: ObjectExpression): void => {
-    if (node === root) insertMissingClassPropertyBefore = 0
-
-    for (const prop of node.properties) {
-      if (prop.type !== 'ObjectProperty') continue
+    function process(
+      prop:
+        | ObjectProperty
+        | Property
+        | ObjectMethod
+        | SpreadProperty
+        | SpreadElement
+    ): void {
+      if (prop.type !== 'ObjectProperty') return
       const { value } = prop
       const key = getRawKey(prop.key)
-      if (!key || value.type !== 'ObjectExpression') continue
+      if (!key || value.type !== 'ObjectExpression') return
       const [localSelector] = splitGlobals(key)
       if (localSelector) {
         addMissingClassPropertiesSelector.processSync(localSelector)
       }
-
       addMissingClassProperties(value)
-      insertMissingClassPropertyBefore++
+    }
+    if (node === root) {
+      for (let i = 0; i < node.properties.length; i++) {
+        insertMissingClassPropertyBefore = i
+        process(node.properties[i])
+      }
+    } else {
+      for (const prop of node.properties) process(prop)
     }
   }
   const convertClassReferences = (node: ObjectExpression): void => {
