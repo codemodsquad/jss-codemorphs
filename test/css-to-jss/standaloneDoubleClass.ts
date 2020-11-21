@@ -1,18 +1,21 @@
 export const input = `
 const styles = {
 /* selectionStart */
-.button:after {
-  content: 'JSS';
+.foo.bar {
+  border: 1px solid blue;
 }
 /* selectionEnd */
 }
 `
 
+export const options = {}
+
 export const expected = `
 const styles = {
-  button: {},
-  '$button:after': {
-    content: '"JSS"',
+  foo: {},
+  bar: {},
+  '$foo$bar': {
+    border: '1px solid blue',
   },
 }
 `

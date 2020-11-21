@@ -118,16 +118,6 @@ export function splitGlobals(selector: string): [string | null, string | null] {
 export function convertSelectors(root: ObjectExpression): void {
   const replacements: Map<string, string> = new Map()
 
-  const processClassesSelector = selectorParser(root => {
-    root.walkClasses(classNode => {
-      if (!classNode.value) return
-      const replacement = replacements.get(classNode.value)
-      if (replacement) {
-        classNode.replaceWith(selectorParser.tag({ value: replacement }))
-      }
-    })
-  })
-
   const processRootSelector = selectorParser(root => {
     if (root.length !== 1) return
     const { first } = root
@@ -148,6 +138,35 @@ export function convertSelectors(root: ObjectExpression): void {
       if (node.type === 'selector' && node.at(0)?.value !== '&') {
         node.insertBefore(node.at(0), selectorParser.combinator({ value: ' ' }))
         node.insertBefore(node.at(0), selectorParser.nesting({}))
+      }
+    })
+  })
+
+  const convertClassReferencesSelector = selectorParser(root => {
+    root.walkClasses(classNode => {
+      if (!classNode.value) return
+      const replacement = replacements.get(classNode.value)
+      if (replacement) {
+        classNode.replaceWith(selectorParser.tag({ value: replacement }))
+      }
+    })
+  })
+
+  let insertMissingClassPropertyBefore = 0
+
+  const addMissingClassPropertiesSelector = selectorParser(rootSelector => {
+    rootSelector.walkClasses(classNode => {
+      if (!classNode.value) return
+      const className = classNode.value
+      const replacement = replacements.get(className)
+      if (!replacement) {
+        const replacement = camelCase(className)
+        replacements.set(className, `$${replacement}`)
+        root.properties.splice(
+          insertMissingClassPropertyBefore++,
+          0,
+          j.objectProperty(j.identifier(replacement), j.objectExpression([]))
+        )
       }
     })
   })
@@ -208,7 +227,9 @@ export function convertSelectors(root: ObjectExpression): void {
       processNode(key, value)
     }
   }
-  const processClasses = (node: ObjectExpression): void => {
+  const addMissingClassProperties = (node: ObjectExpression): void => {
+    if (node === root) insertMissingClassPropertyBefore = 0
+
     for (const prop of node.properties) {
       if (prop.type !== 'ObjectProperty') continue
       const { value } = prop
@@ -216,15 +237,31 @@ export function convertSelectors(root: ObjectExpression): void {
       if (!key || value.type !== 'ObjectExpression') continue
       const [localSelector] = splitGlobals(key)
       if (localSelector) {
-        const newKey = processClassesSelector.processSync(localSelector)
+        addMissingClassPropertiesSelector.processSync(localSelector)
+      }
+
+      addMissingClassProperties(value)
+      insertMissingClassPropertyBefore++
+    }
+  }
+  const convertClassReferences = (node: ObjectExpression): void => {
+    for (const prop of node.properties) {
+      if (prop.type !== 'ObjectProperty') continue
+      const { value } = prop
+      const key = getRawKey(prop.key)
+      if (!key || value.type !== 'ObjectExpression') continue
+      const [localSelector] = splitGlobals(key)
+      if (localSelector) {
+        const newKey = convertClassReferencesSelector.processSync(localSelector)
         if (newKey !== key) prop.key = objectPropertyKey(newKey)
       }
 
-      processClasses(value)
+      convertClassReferences(value)
     }
   }
   processNode(null, root)
-  processClasses(root)
+  addMissingClassProperties(root)
+  convertClassReferences(root)
 }
 
 export function convertAnimationNames(

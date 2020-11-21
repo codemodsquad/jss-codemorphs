@@ -34,10 +34,11 @@ const styles = {
     '& $barQux, & $glorm:after': {
       color: 'red',
     },
-    '& .baz': {
+    '& $baz': {
       color: 'blue',
     }
   },
+  baz: {},
   glorm: {
     color: 'green',
   },

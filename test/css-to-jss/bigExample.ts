@@ -66,7 +66,7 @@ const styles = {
     '& $barQux, & $glorm:after': {
       color: 'red',
     },
-    '& .baz:after': {
+    '& $baz:after': {
       content: '"whoo"',
     }
   },
@@ -101,5 +101,6 @@ const styles = {
       },
     },
   },
+  baz: {},
 }
 `

@@ -17,9 +17,10 @@ const styles = {
 
 export const expected = `
 const styles = {
+  bar: {},
   foo: {
     display: 'flex',
-    '& .bar': {
+    '& $bar': {
       alignItems: 'flex-start',
       fallbacks: [{
         alignItems: 'blah'
@@ -33,6 +34,6 @@ const styles = {
         display: 'flex-box'
       }
     ],
-  }
+  },
 }
 `

@@ -102,7 +102,7 @@ foo: {
   '& $barQux, & $glorm:after': {
     color: 'red',
   },
-  '& .baz:after': {
+  '& $baz:after': {
     content: '"whoo"',
   },
 },
@@ -137,6 +137,7 @@ barQux: {
     },
   },
 },
+baz: {},
 ```
 
 # Node.js API
