@@ -12,6 +12,7 @@ import * as recast from 'recast'
 import camelCase from 'lodash/camelCase'
 import upperFirst from 'lodash/upperFirst'
 import defaultUnits from './defaultUnits'
+import unitlessProperties from './unitlessProperties'
 import {
   LiteralKind,
   IdentifierKind,
@@ -330,6 +331,8 @@ function convertDeclValue(value: string): string {
   return JSON.parse(value)
 }
 
+const numberPattern = '\\d+(\\.\\d+)?|\\.\\d+'
+
 function convertDecl(decl: postcss.Declaration): ObjectProperty {
   const key = convertProp(decl.prop)
   const declValue = convertDeclValue(decl.value)
@@ -339,9 +342,16 @@ function convertDecl(decl: postcss.Declaration): ObjectProperty {
   } else {
     const defaultUnit = defaultUnits[decl.prop]
     value = j.stringLiteral(declValue)
-    if (defaultUnit != null) {
-      const match = new RegExp(`^(\\d+)${defaultUnit}$`).exec(declValue)
+    if (defaultUnit) {
+      const match = new RegExp(`^(${numberPattern})${defaultUnit}$`).exec(
+        declValue
+      )
       if (match) value = j.numericLiteral(parseFloat(match[1]))
+    } else if (
+      unitlessProperties.has(decl.prop) &&
+      new RegExp(`^(${numberPattern})$`).exec(declValue)
+    ) {
+      value = j.numericLiteral(parseFloat(declValue))
     }
   }
   if (decl.important) {
